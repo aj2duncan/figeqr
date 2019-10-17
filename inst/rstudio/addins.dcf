@@ -1,4 +1,4 @@
 Name: Insert Figure and Equation References
 Description: Addin to insert figure and equation references in Bookdown document.
-Binding: figeqrefAddin
+Binding: insert_figeqref
 Interactive: true
