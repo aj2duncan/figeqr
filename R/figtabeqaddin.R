@@ -1,4 +1,4 @@
-#' Invoke RStudio add-in to help insert either equation or figure references
+#' Invoke RStudio add-in to help insert either figure, table or equation references
 #'
 #' @details It is assummed that this addin will be called whilst the focus of
 #'     RStudio is an R markdown document that will allow users to insert
@@ -11,48 +11,56 @@
 #'     reference, including required syntax will be inserted at the cursor
 #'     position.
 #'
-#' @return Inserts selected equation or figure reference at current location.
+#' @return Inserts selected figure, table or equation reference at current location.
 #'
 #' @examples
 #' \dontrun{
-#'  insert_figeqref()
+#'  insert_figtabeqref()
 #' }
 #'
 #' @import miniUI
 #' @import shiny
 #' @export
 #'
-insert_figeqref <- function() {
+insert_figtabeqref <- function() {
 
-  collect_refs <- function(content, pattern) {
-    # look for strings line by line in R markdown document
-    refs <- sapply(regmatches(content, regexec(pattern, content)), "[", 2)
-    # remove NAs
+  collect_refs <- function(lines, pattern) {
+    refs <- sapply(regmatches(lines, regexec(pattern, lines)), "[", 2)
     refs <- refs[!is.na(refs)]
     return(refs)
   }
 
   # pattern to match ```{r fig-name} or ```{r fig-name, options}
   # for chunk names
-  fig_pattern <- "\\{r ([A-z]+)[,|\\}]"
+  figtab_pattern <- "\\{r ([A-z0-9-]+)[,|\\}]"
   # pattern to match \#eq:name in LaTeX mathematical equations
   eq_pattern <- "\\#eq:([A-z]+)"
 
-  # collect current R markdown document
-  content <- rstudioapi::getActiveDocumentContext()$contents
+  # collect info from active document
+  content <- rstudioapi::getActiveDocumentContext()
+  # listfiles in the same directory
+  directory = dirname(content$path)
+  Rmd_files = list.files(directory, pattern = ".Rmd")
+
+  # read all files in
+  all_lines = lapply(Rmd_files, function(x) {
+    readLines(paste(directory, x, sep = "/"))
+    })
+  # collapse to single vector
+  all_lines = do.call(`c`, all_lines)
   # find all chunks
-  chunks <- collect_refs(content, fig_pattern)
+  chunks <- collect_refs(all_lines, figtab_pattern)
   # find all equations that are labelled
-  eqs <- collect_refs(content, eq_pattern)
+  eqs <- collect_refs(all_lines, eq_pattern)
 
   # ui
   ui <- miniPage(
     gadgetTitleBar("Add Bookdown References"),
     miniContentPanel(
       fillRow(
-        radioButtons("fig_or_eq",
+        radioButtons("fig_tab_eq",
                      label = "Type of Reference to Insert",
-                     choices = c("Figure", "Equation")),
+                     choices = c("Figure", "Table", "Equation")),
         selectInput("ref_to_insert",
                     label = "Select a chunk name",
                     choices = chunks)
@@ -65,22 +73,24 @@ insert_figeqref <- function() {
 
     # switch dropdown to either figure or equation labels
     observeEvent(input$fig_or_eq, {
-      if(input$fig_or_eq == "Figure") {
-        updateSelectInput(session, "ref_to_insert",
-                          label = "Select a chunk name",
-                          choices = chunks)
-      } else {
+      if(input$fig_or_eq == "Equation") {
         updateSelectInput(session, "ref_to_insert",
                           label = "Select an equation reference",
                           choices = eqs)
+      } else {
+        updateSelectInput(session, "ref_to_insert",
+                          label = "Select a chunk name",
+                          choices = chunks)
       }
     })
 
 
     # Insert correct reference on "Done"
     observeEvent(input$done, {
-      if(input$fig_or_eq == "Figure") {
+      if(input$fig_tab_eq == "Figure") {
         ref_label <- paste0("\\@ref(fig:", input$ref_to_insert, ")")
+      } else if(input$fig_tab_eq == "Table") {
+        ref_label <- paste0("\\@ref(tab:", input$ref_to_insert, ")")
       } else {
         ref_label <- paste0("\\@ref(eq:", input$ref_to_insert, ")")
       }

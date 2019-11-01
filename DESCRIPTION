@@ -1,16 +1,16 @@
-Package: figeqr
+Package: figtabeqr
 Type: Package
-Title: RStudio Addin to Add References for Equations and Figures
+Title: RStudio Addin to Add References for Figures, Tables or Equations
 Description: Package containing RStudio addin that helps users add references
-    for equations and figures in bookdown documents. 
-Version: 0.1.0
+    for figures, tables or equations in bookdown documents. 
+Version: 0.2.0
 Authors@R: c(
   person("Andrew", "Duncan", 
   email = "andrew@aj2duncan.com", 
   role = c("aut", "cre")
   ))
-URL: https://github.com/aj2duncan/figeqr
-BugReports: https://github.com/aj2duncan/figeqr/issues
+URL: https://github.com/aj2duncan/figtabeqr
+BugReports: https://github.com/aj2duncan/figtabeqr/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
