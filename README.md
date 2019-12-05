@@ -1,5 +1,10 @@
 # figtabeqr
 
+
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.com/aj2duncan/figtabeqr.svg?branch=master)](https://travis-ci.com/aj2duncan/figtabeqr)
+<!-- badges: end -->
+
 An RStudio addin to help add references to figures, tables or equations into Bookdown documents. 
 
 
